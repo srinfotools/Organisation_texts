@@ -1,0 +1,61 @@
+#!/bin/ksh
+
+# List of servers to check
+servers=("server1" "server2" "server3")
+
+# Directory where the filenames are located
+directory="/appbin/webserverNG/"
+
+# ANSI color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Function to check processes on a remote server
+check_processes() {
+    local server=$1
+    echo "Checking server: $server"
+
+    remote_script="
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        NC='\033[0m'
+
+        directory=\"$directory\"
+
+        if cd \"\$directory\" 2>/dev/null; then
+            for file in \$(ls -1 https-* 2>/dev/null); do
+                if pgrep -f \"\$file\" > /dev/null; then
+                    echo -e \"\${GREEN}Process \$file is running on $server\${NC}\"
+                else
+                    echo -e \"\${RED}Process \$file is NOT running on $server\${NC}\"
+                    read -p \"Do you want to start the process \$file? (yes/no): \" response
+                    if [ \"\$response\" = \"yes\" ]; then
+                        startup_script=\"\$directory/\$file/startup.sh\"
+                        if [ -x \"\$startup_script\" ]; then
+                            \"\$startup_script\"
+                            if [ \$? -eq 0 ]; then
+                                echo -e \"\${GREEN}Process \$file started successfully on $server\${NC}\"
+                            else
+                                echo -e \"\${RED}Failed to start process \$file on $server\${NC}\"
+                            fi
+                        else
+                            echo -e \"\${RED}Startup script \$startup_script not found or not executable for process \$file on $server\${NC}\"
+                        fi
+                    else
+                        echo \"Process \$file will not be started on $server\"
+                    fi
+                fi
+            done
+        else
+            echo \"Directory \$directory does not exist on $server\"
+        fi
+    "
+
+    ssh -T "$server" /bin/ksh -c "$remote_script"
+}
+
+# Loop through each server and check processes
+for server in "${servers[@]}"; do
+    check_processes "$server"
+done
