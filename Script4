@@ -1,0 +1,75 @@
+#!/bin/ksh
+
+# List of servers to check
+servers=("server1" "server2" "server3")
+
+# Directory where the filenames are located
+directory="/appbin/webserverNG/"
+
+# ANSI color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Function to check processes on a remote server
+check_processes() {
+    local server=$1
+    echo "Checking server: $server"
+
+    # Define the remote script to check for running processes
+    remote_script=$(cat <<EOF
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        NC='\033[0m'
+
+        directory="$directory"
+
+        cd "\$directory" 2>/dev/null
+        if [ \$? -ne 0 ]; then
+            echo "Directory \$directory does not exist on $server"
+            exit 1
+        fi
+
+        for file in \$(ls -1 https-* 2>/dev/null); do
+            if pgrep -f "\$file" > /dev/null; then
+                echo -e "\${GREEN}Process \$file is running on $server\${NC}"
+            else
+                echo -e "\${RED}Process \$file is NOT running on $server\${NC}"
+                echo "\$file"
+            fi
+        done
+EOF
+    )
+
+    # Execute the remote script and capture the output
+    not_running_processes=$(ssh -T "$server" /bin/ksh -c "$remote_script" | grep '^https-')
+
+    # Loop through the list of not running processes and ask the user for action
+    for process in $not_running_processes; do
+        read -p "Do you want to start the process $process on $server? (yes/no): " response
+        if [ "$response" = "yes" ]; then
+            start_process_script=$(cat <<EOF
+                startup_script='$directory/$process/startup.sh'
+                if [ -x "\$startup_script" ]; then
+                    "\$startup_script"
+                    if [ \$? -eq 0 ]; then
+                        echo -e "\${GREEN}Process $process started successfully on $server\${NC}"
+                    else
+                        echo -e "\${RED}Failed to start process $process on $server\${NC}"
+                    fi
+                else
+                    echo -e "\${RED}Startup script \$startup_script not found or not executable for process $process on $server\${NC}"
+                fi
+EOF
+            )
+            ssh -T "$server" /bin/ksh -c "$start_process_script"
+        else
+            echo "Process $process will not be started on $server"
+        fi
+    done
+}
+
+# Loop through each server and check processes
+for server in "${servers[@]}"; do
+    check_processes "$server"
+done
