@@ -1,1 +1,16 @@
-INC
+"INC3856702 - Intermittently observing HTTP 500 Failure and Latency blips for V1/alerts/preferences & v1/experience/alert-preferences.
+
+there are total 6 occurances for this issue duration of each occurrenc/blip that we observed is 3mins.
+bride call is in progress with apigee, mysql db and unix teams.
+we are as a ecom team stated that observing mysql DB spikes during the issue timeframes for the alert prefenrence API.
+Mysql DB team stated that they are seeing slow queries during the mentioned timelines. 
+Ecom team are checking on their associated batches and are investigating on the cause of the issue.
+Final update:
+Post 2.50PM Et , there were 2 occurences of the issue between 4:29 and 5:33 PM ET. 
+As the ecom team are seeing connection timeouts while connecting to mysql DB ,network &PCF teams are engaged in order to perform packe capture. 
+Failures/latency has last occurrred at 5.33PM ET, post that no issues observed. 
+Also from DBA end, raffic has been diverted to vplalertdbda02 at 7:02 PM ET. 
+All connections are terminated on vplalertdbda01 and currently traffic is on vplalertdbda02. No spikes observed on vplalertdbda02. 
+"
+The above summary of the describes the incident details, and I wanted to take a worry part in the summary is , for the past 3 days the applicatin is running with only one one DB node as vplalertdbda02 as the other node is still not available and we don't have any findings from mysql team for past 3 days. 
+Can you please refer the above incident details and help to write a very short and crispy worry content out of the above incident.       
