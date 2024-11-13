@@ -14,3 +14,6 @@ All connections are terminated on vplalertdbda01 and currently traffic is on vpl
 "
 The above summary of the describes the incident details, and I wanted to take a worry part in the summary is , for the past 3 days the applicatin is running with only one one DB node as vplalertdbda02 as the other node is still not available and we don't have any findings from mysql team for past 3 days. 
 Can you please refer the above incident details and help to write a very short and crispy worry content out of the above incident.       
+
+For the past three days, the application has been running on a single DB node (vplalertdbda02) as the other node remains unavailable. Despite initial investigations, we have not received any updates or findings from the MySQL team. This situation raises concerns about the potential risk of running on a single database node, which could lead to further disruptions if any issues arise with the current node. Immediate attention from the MySQL team is needed to restore full redundancy and minimize operational risk.
+
